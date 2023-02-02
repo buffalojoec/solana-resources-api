@@ -1,0 +1,15 @@
+[package]
+name = "solana-resources-api"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+actix-rt = "2.8.0"
+actix-web = "4.3.0"
+diesel = { version = "2.0.3", features = ["postgres", "r2d2", "chrono", "uuid"] }
+env_logger = "0.10.0"
+r2d2 = "0.8.10"
+r2d2-diesel = "1.0.0"
+serde = { version="1.0.152", features=["derive"]}
+serde_json = "1.0.91"
+uuid = { version = "1.3.0", features = ["serde", "v4"] }
