@@ -42,7 +42,7 @@ async fn main() -> io::Result<()> {
             .service(controller::list_resources)
             .service(controller::get_resource)
             .service(controller::create_resource)
-            // .service(controller::update_resource)
+            .service(controller::update_resource)
             .wrap(middleware::Logger::default())
     })
     .bind("0.0.0.0:9090")?

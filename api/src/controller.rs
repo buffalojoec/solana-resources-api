@@ -33,12 +33,24 @@ pub async fn get_resource(path: Path<(String,)>, pool: Data<DBPool>) -> HttpResp
 
 // Create New Resource
 #[post("/resources")]
-pub async fn create_resource(resource_request: Json<NewResourceRequest>, pool: Data<DBPool>) -> HttpResponse {
+pub async fn create_resource(new_resource_request: Json<NewResourceRequest>, pool: Data<DBPool>) -> HttpResponse {
     let mut conn = crate::get_connection_to_pool(pool);
-    match create_new_resource(resource_request.0, &mut conn) {
+    match create_new_resource(new_resource_request.0, &mut conn) {
         Ok(created_resource) => ResponseType::Created(created_resource).get_response(),
         Err(_) => ResponseType::NotFound(
             NotFoundMessage::new("Error creating resource.".to_string())
+        ).get_response(),
+    }
+}
+
+// Create New Resource
+#[put("/resources/{id}")]
+pub async fn update_resource(path: Path<(String,)>, update_resource_request: Json<UpdateResourceRequest>, pool: Data<DBPool>) -> HttpResponse {
+    let mut conn = crate::get_connection_to_pool(pool);
+    match update_existing_resource(Uuid::parse_str(path.0.as_str()).unwrap(), update_resource_request.0, &mut conn) {
+        Ok(created_resource) => ResponseType::Created(created_resource).get_response(),
+        Err(_) => ResponseType::NotFound(
+            NotFoundMessage::new("Error updating resource.".to_string())
         ).get_response(),
     }
 }
