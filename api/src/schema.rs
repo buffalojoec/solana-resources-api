@@ -1,7 +1,7 @@
+// @generated automatically by Diesel CLI.
 
-
-table! {
-    miners (id) {
+diesel::table! {
+    resources (id) {
         id -> Uuid,
         resource_scope -> Text,
         resource_topic -> Text,

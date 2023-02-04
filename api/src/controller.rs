@@ -1,54 +1,44 @@
 use {
     actix_web::HttpResponse,
-    actix_web::web::Json,
-    
-    crate::resource::*,
+    actix_web::web::{Data, Json, Path},
+    uuid::Uuid,
+
+    crate::DBPool,
     crate::util::{NotFoundMessage, ResponseType},
+    crate::resource::*,
 };
 
-// List all resources
-#[get("/resources")]
-pub async fn list_resources() -> HttpResponse {
 
-    /* 
-        TODO: Get all Resources from the DB
-    */
-    let resources: Vec<Resource> = vec![]; // Empty for now
+// List all Resources
+#[get("/resources")]
+pub async fn list_resources(pool: Data<DBPool>) -> HttpResponse {
+    let mut conn = crate::get_connection_to_pool(pool);
+    let resources: Vec<ResourceResponse> = fetch_all_resources(&mut conn);
     ResponseType::Ok(resources).get_response()
 }
 
 // Get a resource
 #[get("/resources/{id}")]
-pub async fn get_resource() -> HttpResponse {
-
-    /* 
-        TODO: Get the ResourceDAO object from DB WHERE id = requested id
-                and convert to Resource object
-    */
-    let resource: Option<Resource> = None; // None for now
+pub async fn get_resource(path: Path<(String,)>, pool: Data<DBPool>) -> HttpResponse {
+    let mut conn = crate::get_connection_to_pool(pool);
+    let resource: Option<ResourceResponse> = fetch_resource_by_id(
+        Uuid::parse_str(path.0.as_str()).unwrap(), &mut conn);
     match resource {
         Some(resource) => ResponseType::Ok(resource).get_response(),
         None => ResponseType::NotFound(
-            NotFoundMessage::new("Resource/Club not found".to_string())
+            NotFoundMessage::new("Resource not found".to_string())
         ).get_response(),
     }
 }
-// Create New Resource
-#[post("/resources")]
-pub async fn create_resource(create_resource_request: Json<NewResourceRequest>) -> HttpResponse {
-    /* 
-        TODO: Create a new ResourceDAO object from requested inputs and write to DB
-    */
-    let resource: Vec<Resource> = vec![]; // Empty for now
-    ResponseType::Created(resource).get_response()
-}
 
 // Create New Resource
-#[put("/resources/{id}")]
-pub async fn update_resource(update_resource_request: Json<UpdateResourceRequest>) -> HttpResponse {
-    /* 
-        TODO: Create a new ResourceDAO object from requested inputs and write to DB
-    */
-    let resource: Vec<Resource> = vec![]; // Empty for now
-    ResponseType::Created(resource).get_response()
+#[post("/resources")]
+pub async fn create_resource(resource_request: Json<NewResourceRequest>, pool: Data<DBPool>) -> HttpResponse {
+    let mut conn = crate::get_connection_to_pool(pool);
+    match create_new_resource(resource_request.0, &mut conn) {
+        Ok(created_resource) => ResponseType::Created(created_resource).get_response(),
+        Err(_) => ResponseType::NotFound(
+            NotFoundMessage::new("Error creating resource.".to_string())
+        ).get_response(),
+    }
 }
